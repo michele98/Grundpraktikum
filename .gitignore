@@ -1,1 +1,3 @@
-bella
+*.qti
+*.docx
+.gitignore
