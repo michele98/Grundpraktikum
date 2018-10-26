@@ -1,0 +1,10 @@
+schwing1; X=, Y=k; fit = constant; parameters = 1.2006629491004377 ; Covariance= [0.00022532] K= 1.2006629491004377
+schwing2; X=, Y=k; fit = constant; parameters = 1.396518621 ; Covariance= [0.00010034] ; K= 1.396518621
+
+wasser1; X=h, Y=h1; fit=linear1; Parameters= 0.20422608795950348 ; Covariance: [1.097871e-05] ; K = 1.2566383301455986
+wasser2; X=h, Y=h1; fit=linear1; Parameters= 0.23438468085348926 ; Covariance: [0.00014224] ; K = 1.3061389642970775
+wasser2; X=h, Y=h1; fit=linear1; Parameters= 0.22672081754730483 ; Covariance: [2.81914731e-05] ; K = 1.293194001199139 Datapoint 6 excluded
+
+wasser1; X=h, Y=h1; fit=linear2; Parameters= 0.21517447722348562 -0.5832762008181822 ; Covariance: [ 0.0002053  -0.01032672] [-0.01032672  0.55015695] ; K = 1.274168552090728
+wasser2; X=h, Y=h1; fit=linear2; Parameters= 0.20207138903282645 1.5929532082993432 ; Covariance: [ 0.00165895 -0.07451995] [-0.07451995  3.67362142] ; K = 1.2532449472991007
+wasser2; X=h, Y=h1; fit=linear2; Parameters= 0.23010419674362093 -0.17102926330526547 ; Covariance: [ 0.00036698 -0.01692984] [-0.01692984  0.85580028] ; K = 1.2988770633251459 Datapoint 6 excluded
