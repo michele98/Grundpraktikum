@@ -9,7 +9,7 @@ from scipy.optimize import curve_fit
 =========================================='''
 #find the csv file with the data
 dataset_folder = "../Versuch10/datasets/"
-dataset_file_name = "wasser2"
+dataset_file_name = "schwing1"
 dataset_file_extension = ".csv"
 save_plot = True #attention! overwrites old plot with same name
 plot_folder = "../Versuch10/plots/"
@@ -21,18 +21,18 @@ add_origin = False
 show_plot = True
 
 #set the x and y data and errors
-x_column_caption = "h"
-y_column_caption = "h1"
-x_err_column_caption = "fh"
-y_err_column_caption = "fh1"
+x_column_caption = ""
+y_column_caption = "k"
+x_err_column_caption = "null"
+y_err_column_caption = "fk"
 #set axis labels and graph appearence
-x_label = "Wasserhoehe davor [mm] dh"
-y_label = "Wasserhoehe danach [mm] dh'"
-graph_format = "b." #respectively color and line style
+x_label = "Versuch"
+y_label = "K"
+graph_format = "bo" #respectively color and line style
 axes_label_fontsize = "x-large"
 error_bar_capsize = 2
 #fit setup
-function_to_fit = ft.linear2
+function_to_fit = ft.constant
 fit_graph_format = "r-"
 fit_samples_number = 150
 show_parameter_table = True
@@ -40,7 +40,7 @@ show_parameter_table = True
 legend_location = "upper left"
 legend_fontsize = "x-large"
 raw_graph_label = ""
-fitted_graph_label = "Gefitteter Linearer Verlauf"
+fitted_graph_label = "Gefitteter Wert"
 #indexes of datapoints to discard
 discard_datapoints_indexes = []
 
@@ -155,7 +155,8 @@ if (fit):
         param_txt.write ("; Covariance: ")
         for co in pcov: #writes covariance matrix
             param_txt.write(str(co) + " ")
-        param_txt.write("; K = {}".format(str(1/(1-popt[0])))) #calculates K from steigung
+        #param_txt.write("; K = {}".format(str(1/(1-popt[0])))) #calculates K from steigung
+        param_txt.write("; K = "+ str(popt[0])) #calculates K from steigung
         param_txt.close()
 
 plot(x_values, y_values, x_label, y_label, x_err_values, y_err_values)
