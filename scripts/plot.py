@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.axes as axes
 import data_manager as dm
 import math
 import fit_functions as ft
@@ -29,7 +30,8 @@ y_err_column_caption = "fk"
 x_label = "Versuch"
 y_label = "K"
 graph_format = "bo" #respectively color and line style
-axes_label_fontsize = "x-large"
+axes_label_fontsize = "xx-large"
+axes_tick_fontsize = 18
 error_bar_capsize = 2
 #fit setup
 function_to_fit = ft.constant
@@ -72,9 +74,10 @@ def f(x):
 def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
     fig, ax = plt.subplots()
     ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = error_bar_capsize, fmt = graph_format, label = raw_graph_label)
+    ax.tick_params(labelsize = axes_tick_fontsize)
     plt.xlabel(x_label, fontsize = axes_label_fontsize)
     plt.ylabel(y_label, fontsize = axes_label_fontsize)
-    
+    plt.tight_layout() #makes room for larger label
     if (fit):
         fit_start = min(x_values)
         fit_stop = max(x_values)
@@ -88,7 +91,7 @@ def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
     if (save_plot):
         #plot_file_name = plot_folder + dataset_file_name + x_column_caption + "-" + y_column_caption + ".png"
         plot_file_name = "{}{}-{}-{}-{}.png".format(plot_folder, dataset_file_name,function_to_fit.__name__, x_column_caption, y_column_caption)
-        plt.savefig(plot_file_name)
+        plt.savefig(plot_file_name)#, bbox_inches ="tight")
     if (show_plot):
         plt.show()
 
