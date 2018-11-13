@@ -4,37 +4,38 @@ import data_manager as dm
 import math
 import fit_functions as ft
 from scipy.optimize import curve_fit
+from scipy.stats import chisquare
 
 '''==========================================
                 SETUP SECTION
 =========================================='''
 #find the csv file with the data
 dataset_folder = "../Versuch10/datasets/"
-dataset_file_name = "schwing1"
+dataset_file_name = "wasser2"
 dataset_file_extension = ".csv"
-save_plot = True #attention! overwrites old plot with same name
 plot_folder = "../Versuch10/plots/"
 
 include_legend = True
 fit = True
-include_parameter_values = True
+include_parameter_values = False
 add_origin = False
+save_plot = False #attention! overwrites old plot with same name
 show_plot = True
 
 #set the x and y data and errors
-x_column_caption = ""
-y_column_caption = "k"
-x_err_column_caption = "null"
-y_err_column_caption = "fk"
+x_column_caption = "h"
+y_column_caption = "h1"
+x_err_column_caption = "fh"
+y_err_column_caption = "fh1"
 #set axis labels and graph appearence
-x_label = "Versuch"
-y_label = "K"
-graph_format = "bo" #respectively color and line style
-axes_label_fontsize = "xx-large"
-axes_tick_fontsize = 18
+x_label = "Wasserhoehe davor dh (mm)"
+y_label = "Wasserhoehe danach dh' (mm)"
+graph_format = "b." #respectively color and line style
 error_bar_capsize = 2
+axes_label_fontsize = 18
+axes_tick_fontsize = 18
 #fit setup
-function_to_fit = ft.constant
+function_to_fit = ft.linear1
 fit_graph_format = "r-"
 fit_samples_number = 150
 show_parameter_table = True
@@ -42,7 +43,7 @@ show_parameter_table = True
 legend_location = "upper left"
 legend_fontsize = "x-large"
 raw_graph_label = ""
-fitted_graph_label = "Gefitteter Wert"
+fitted_graph_label = "Gefitteter Verlauf y = ax"#\na = 0.2278"
 #indexes of datapoints to discard
 discard_datapoints_indexes = []
 
@@ -85,7 +86,7 @@ def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
         x_fit = [i for i in frange(fit_start, fit_stop, fit_step)]
         y_fit = [f(i) for i in frange(fit_start, fit_stop, fit_step)]
         ax.plot (x_fit, y_fit, fit_graph_format, label = fitted_graph_label)
-
+        print("Chi: " + str(chisquare(y_values, [f(i) for i in x_values])))
     if (include_legend):
         legend = ax.legend(loc = legend_location, fontsize = legend_fontsize)
     if (save_plot):
@@ -131,7 +132,8 @@ if (add_origin):
     y_values.append(0.)
     y_err_values.append(0.)
 
-popt, pcov = curve_fit(function_to_fit,x_values, y_values)
+#popt, pcov = curve_fit(function_to_fit,x_values, y_values, sigma = y_err_values, absolute_sigma=True)
+popt, pcov = curve_fit(function_to_fit,x_values, y_values, sigma = y_err_values, absolute_sigma=True)
 #ft.fit has scipy.optimize.curve_fit built in, with parameter bounding
 #popt, pcov = ft.fit(function_to_fit,x_values, y_values)
 
@@ -158,8 +160,8 @@ if (fit):
         param_txt.write ("; Covariance: ")
         for co in pcov: #writes covariance matrix
             param_txt.write(str(co) + " ")
-        #param_txt.write("; K = {}".format(str(1/(1-popt[0])))) #calculates K from steigung
-        param_txt.write("; K = "+ str(popt[0])) #calculates K from steigung
+        param_txt.write("; K = {}".format(str(1/(1-popt[0])))) #calculates K from steigung
+        #param_txt.write("; K = "+ str(popt[0])) #calculates K from steigung
         param_txt.close()
 
 plot(x_values, y_values, x_label, y_label, x_err_values, y_err_values)

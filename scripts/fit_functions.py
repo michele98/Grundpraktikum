@@ -1,7 +1,6 @@
 from numpy import exp, log
 import numpy as np
 import math
-from scipy.optimize import curve_fit
 #using numpy instead of math because fitting has issues with non numpy functions
 
 #param_bounds = (-np.inf,np.inf)
@@ -71,10 +70,10 @@ def sin (x, a, b, c):
         #plotting wants a scalar
         return a*(math.sin(x/b+c))
 
-def xtoN(x,a,B):
+def xpowerN(x,a,B):
     return B*(x**a)
 
-def xtoN2(x,a,B,c):
+def xpowerN2(x,a,B,c):
     return B*(x**a)+c
 
 def identical (l):
