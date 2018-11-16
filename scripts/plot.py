@@ -6,12 +6,14 @@ import fit_functions as ft
 from scipy.optimize import curve_fit
 from scipy.stats import chisquare
 
+'''zum fitten gut: lmfit'''
+
 '''==========================================
                 SETUP SECTION
 =========================================='''
 #find the csv file with the data
 dataset_folder = "../Versuch10/datasets/"
-dataset_file_name = "wasser2"
+dataset_file_name = "wasser1"
 dataset_file_extension = ".csv"
 plot_folder = "../Versuch10/plots/"
 
@@ -75,7 +77,9 @@ def f(x):
 def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
     fig, ax = plt.subplots()
     ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = error_bar_capsize, fmt = graph_format, label = raw_graph_label)
+    #ax.errorbar(x_values, y_values, fmt = graph_format, label = raw_graph_label)
     ax.tick_params(labelsize = axes_tick_fontsize)
+    #ax.set_xlim(0,3)
     plt.xlabel(x_label, fontsize = axes_label_fontsize)
     plt.ylabel(y_label, fontsize = axes_label_fontsize)
     plt.tight_layout() #makes room for larger label
@@ -114,10 +118,12 @@ def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
 '''
 
 dataset = dm.csv_to_list(dataset_folder + dataset_file_name + dataset_file_extension)
-x_values = dm.return_column (dataset, name = x_column_caption)
-x_err_values = dm.return_column (dataset, name = x_err_column_caption)
-y_values = dm.return_column (dataset, name = y_column_caption)
-y_err_values = dm.return_column (dataset, name = y_err_column_caption)
+x_values = dm.return_column (dataset, title = x_column_caption)
+x_err_values = dm.return_column (dataset, title = x_err_column_caption)
+y_values = dm.return_column (dataset, title = y_column_caption)
+y_err_values = dm.return_column (dataset, title = y_err_column_caption)
+
+print (x_values)
 
 discard_datapoints_indexes.sort(reverse = True) #necessary for removing correct point
 for i in discard_datapoints_indexes:

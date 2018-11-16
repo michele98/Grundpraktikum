@@ -70,6 +70,14 @@ def sin (x, a, b, c):
         #plotting wants a scalar
         return a*(math.sin(x/b+c))
 
+def cos (x, a, b, c):
+    try:
+        #fit wants a list
+        return [a*math.cos(k/b+c) for k in x]
+    except:
+        #plotting wants a scalar
+        return a*(math.cos(x/b+c))
+
 def xpowerN(x,a,B):
     return B*(x**a)
 
@@ -79,3 +87,6 @@ def xpowerN2(x,a,B,c):
 def identical (l):
     arr = np.array(l)
     return arr
+
+def exponential_decay_oscillator(t,A,B,offset,omega,beta):
+    return exp(-beta*t)*(A*np.cos(omega*t) + B*np.sin(omega*t))+offset
