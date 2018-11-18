@@ -5,6 +5,9 @@ import math
 
 #param_bounds = (-np.inf,np.inf)
 
+def ret_args(*args):
+    return args
+
 def fit(function_to_fit,x_values,y_values):
     #print("PARAM BOUNDS")
     #print (param_bounds)
@@ -62,6 +65,21 @@ def sqrt2 (x,a,b,c):
 def inversex(x,a,b):
     return a/(x+b)
 
+def cos(x,A,freq):
+    return A*np.cos(2*np.pi*freq*x)
+
+def sin(x,A,freq):
+    return A*np.sin(2*np.pi*freq*x)
+
+def cos_phase(x,A,freq,phi):
+    return A*np.cos(2*np.pi*freq*x+phi*180/np.pi)
+
+def sin_phase(x,A,freq,phi):
+    return A*np.sin(2*np.pi*freq*x+phi*180/np.pi)
+
+def cos_phase_offset(x,A,freq,phi, offset):
+    return A*np.cos(2*np.pi*freq*x+phi*180/np.pi) + offset
+'''
 def sin (x, a, b, c):
     try:
         #fit wants a list
@@ -77,7 +95,7 @@ def cos (x, a, b, c):
     except:
         #plotting wants a scalar
         return a*(math.cos(x/b+c))
-
+'''
 def xpowerN(x,a,B):
     return B*(x**a)
 
@@ -88,5 +106,8 @@ def identical (l):
     arr = np.array(l)
     return arr
 
-def exponential_decay_oscillator(t,A,B,offset,omega,beta):
-    return exp(-beta*t)*(A*np.cos(omega*t) + B*np.sin(omega*t))+offset
+def exponential_decay_oscillator(t,A,freq,beta,phi,offset):
+    return exp(-beta*t)*A*np.cos(2*np.pi*freq*t+phi)+offset
+
+def exponential_decay_oscillator_2(t,A,B,freq,beta,offset):
+    return exp(-beta*t)*(A*np.cos(2*np.pi*freq*t) + B*np.sin(2*np.pi*freq*t))+offset

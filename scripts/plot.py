@@ -12,10 +12,10 @@ from scipy.stats import chisquare
                 SETUP SECTION
 =========================================='''
 #find the csv file with the data
-dataset_folder = "../Versuch10/datasets/"
-dataset_file_name = "wasser1"
+dataset_folder = "../Versuch2/datasets/rest/"
+dataset_file_name = "T0015"
 dataset_file_extension = ".csv"
-plot_folder = "../Versuch10/plots/"
+plot_folder = "../Versuch2/plots/"
 
 include_legend = True
 fit = True
@@ -25,10 +25,12 @@ save_plot = False #attention! overwrites old plot with same name
 show_plot = True
 
 #set the x and y data and errors
-x_column_caption = "h"
-y_column_caption = "h1"
+title_index = 15
+x_column_caption = "TIME"
+y_column_caption = "CH2"
 x_err_column_caption = "fh"
 y_err_column_caption = "fh1"
+include_error = False
 #set axis labels and graph appearence
 x_label = "Wasserhoehe davor dh (mm)"
 y_label = "Wasserhoehe danach dh' (mm)"
@@ -37,7 +39,7 @@ error_bar_capsize = 2
 axes_label_fontsize = 18
 axes_tick_fontsize = 18
 #fit setup
-function_to_fit = ft.linear1
+function_to_fit = ft.exponential_decay_oscillator
 fit_graph_format = "r-"
 fit_samples_number = 150
 show_parameter_table = True
@@ -51,7 +53,6 @@ discard_datapoints_indexes = []
 
 '''==========================================
 =========================================='''
-
 
 
 def frange(start, stop, step = 1.0):
@@ -76,8 +77,10 @@ def f(x):
 
 def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
     fig, ax = plt.subplots()
-    ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = error_bar_capsize, fmt = graph_format, label = raw_graph_label)
-    #ax.errorbar(x_values, y_values, fmt = graph_format, label = raw_graph_label)
+    if include_error:
+        ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = error_bar_capsize, fmt = graph_format, label = raw_graph_label)
+    else:
+        ax.errorbar(x_values, y_values, fmt = graph_format, label = raw_graph_label)
     ax.tick_params(labelsize = axes_tick_fontsize)
     #ax.set_xlim(0,3)
     plt.xlabel(x_label, fontsize = axes_label_fontsize)
@@ -118,12 +121,10 @@ def plot (x_values, y_values, x_label, y_label, x_err = 0, y_err = 0):
 '''
 
 dataset = dm.csv_to_list(dataset_folder + dataset_file_name + dataset_file_extension)
-x_values = dm.return_column (dataset, title = x_column_caption)
-x_err_values = dm.return_column (dataset, title = x_err_column_caption)
-y_values = dm.return_column (dataset, title = y_column_caption)
-y_err_values = dm.return_column (dataset, title = y_err_column_caption)
-
-print (x_values)
+x_values = dm.return_column (dataset, title = x_column_caption, title_index= title_index)
+x_err_values = dm.return_column (dataset, title = x_err_column_caption, title_index= title_index)
+y_values = dm.return_column (dataset, title = y_column_caption, title_index= title_index)
+y_err_values = dm.return_column (dataset, title = y_err_column_caption, title_index= title_index)
 
 discard_datapoints_indexes.sort(reverse = True) #necessary for removing correct point
 for i in discard_datapoints_indexes:
@@ -138,8 +139,8 @@ if (add_origin):
     y_values.append(0.)
     y_err_values.append(0.)
 
-#popt, pcov = curve_fit(function_to_fit,x_values, y_values, sigma = y_err_values, absolute_sigma=True)
-popt, pcov = curve_fit(function_to_fit,x_values, y_values, sigma = y_err_values, absolute_sigma=True)
+popt, pcov = curve_fit(function_to_fit,x_values, y_values)
+#popt, pcov = curve_fit(function_to_fit,x_values, y_values, sigma = y_err_values, absolute_sigma = True)
 #ft.fit has scipy.optimize.curve_fit built in, with parameter bounding
 #popt, pcov = ft.fit(function_to_fit,x_values, y_values)
 
@@ -169,5 +170,7 @@ if (fit):
         param_txt.write("; K = {}".format(str(1/(1-popt[0])))) #calculates K from steigung
         #param_txt.write("; K = "+ str(popt[0])) #calculates K from steigung
         param_txt.close()
+
+print ("BETA BETTER= " + str(popt[-1]))
 
 plot(x_values, y_values, x_label, y_label, x_err_values, y_err_values)
