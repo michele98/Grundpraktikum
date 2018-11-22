@@ -59,7 +59,7 @@ class Settings(object):
     #legend setup
     legend_location = "upper left"
     legend_fontsize = "x-large"
-    raw_graph_label = "Datenpunkte"
+    graph_label = "Datenpunkte"
     fitted_graph_label = "Gefitteter Verlauf"#\na = 0.2278"
     #indexes of datapoints to discard
     discard_datapoints_indexes = []
@@ -93,13 +93,48 @@ class Settings(object):
 '''==========================================
 =========================================='''
 
-def plot (sets,x_values, y_values, x_err = 0, y_err = 0, f_to_fit = None, params = None):
-    fig, ax = plt.subplots(sets.subplots_nrows, sets.subplots_ncols)
+def plot_multi (sets,x_values, y_values, x_err = [0], y_err = [0], f_to_fit = None, params = None):
+    fig, ax = plt.subplots()
 
-    if (x_err != 0 or y_err != 0):#if (sets.include_error):
-        ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = sets.error_bar_capsize, fmt = sets.graph_format, label = sets.raw_graph_label)
+    for i in range(len(x_values)):
+        if (x_err[0] != 0 or y_err[0] != 0):#if (sets.include_error):
+            ax.errorbar(x_values[i], y_values[i], xerr=x_err[i], yerr=y_err[i], capsize = sets.error_bar_capsize, fmt = sets.graph_format[i], label = sets.graph_label[i])
+        else:
+             ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
+        
+        ax.tick_params(labelsize = sets.axes_tick_fontsize)
+        #ax.set_xlim(0,3)
+        plt.xlabel(sets.x_label, fontsize = sets.axes_label_fontsize)
+        plt.ylabel(sets.y_label, fontsize = sets.axes_label_fontsize)
+        plt.tight_layout() #makes room for larger label
+        
+    if(f_to_fit != None):
+        fit_start = min(x_values[0])
+        fit_stop = max(x_values[0])
+        fit_step = (fit_stop-fit_start)/sets.fit_samples_number
+        x_fit = np.arange(fit_start,fit_stop,fit_step)
+        y_fit = [f_to_fit(x, *params) for x in x_fit]
+        ax.plot(x_fit, y_fit, sets.fit_graph_format, label = sets.fitted_graph_label)
+        #print("Chi: " + str(chisquare(y_values, [f_to_fit(i,*params) for i in x_values])))
+
+    if (sets.include_legend):
+        legend = ax.legend(loc = sets.legend_location, fontsize = sets.legend_fontsize)
+
+    if (sets.save_plot):
+        #plot_file_name = plot_folder + dataset_file_name + x_column_caption + "-" + y_column_caption + ".png"
+        plot_file_name = "{}{}-{}-{}-{}.png".format(sets.plot_folder, sets.dataset_file_name,f_to_fit.__name__, sets.x_column_caption, sets.y_column_caption)
+        plt.savefig(plot_file_name)#, bbox_inches ="tight")
+    
+    return fig, ax
+
+def plot (sets,x_values, y_values, x_err = None, y_err = None, f_to_fit = None, params = None):
+    fig, ax = plt.subplots()
+    
+    if (x_err != None or y_err != None):#if (sets.include_error):
+        ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = sets.error_bar_capsize, fmt = sets.graph_format, label = sets.graph_label)
     else:
-        ax.plot(x_values, y_values, sets.graph_format, label = sets.raw_graph_label)
+        ax.plot(x_values, y_values, sets.graph_format, label = sets.graph_label)
+
     
     ax.tick_params(labelsize = sets.axes_tick_fontsize)
     #ax.set_xlim(0,3)
@@ -126,7 +161,7 @@ def plot (sets,x_values, y_values, x_err = 0, y_err = 0, f_to_fit = None, params
     
     return fig, ax
 
-def plot_multi (sets,x_values, y_values, x_err = 0, y_err = 0, f_to_fit = None, params = None):
+def plot_subplots (sets,x_values, y_values, x_err = 0, y_err = 0, f_to_fit = None, params = None):
     j = 0
     fig, axs = plt.subplots(nrows = sets[j].subplots_nrows, ncols = sets[j].subplots_ncols, squeeze = False)
     print (np.shape(axs))
@@ -134,9 +169,9 @@ def plot_multi (sets,x_values, y_values, x_err = 0, y_err = 0, f_to_fit = None, 
         for ax in axr:
             try:
                 if (x_err != 0 or y_err != 0):#if (sets[j].include_error):
-                    ax.errorbar(x_values[j], y_values[j], xerr=x_err[j], yerr=y_err[j], capsize = sets[j].error_bar_capsize, fmt = sets[j].graph_format, label = sets[j].raw_graph_label)
+                    ax.errorbar(x_values[j], y_values[j], xerr=x_err[j], yerr=y_err[j], capsize = sets[j].error_bar_capsize, fmt = sets[j].graph_format, label = sets[j].graph_label)
                 else:
-                    ax.plot(x_values[j], y_values[j], sets[j].graph_format, label = sets[j].raw_graph_label)
+                    ax.plot(x_values[j], y_values[j], sets[j].graph_format, label = sets[j].graph_label)
                 ax.tick_params(labelsize = sets[j].axes_tick_fontsize)
                 plt.xlabel(sets[j].x_label, fontsize = sets[j].axes_label_fontsize)
                 plt.ylabel(sets[j].y_label, fontsize = sets[j].axes_label_fontsize)

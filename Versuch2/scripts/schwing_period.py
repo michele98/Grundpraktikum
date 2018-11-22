@@ -57,7 +57,7 @@ if __name__ == "__main__":
         time, deviation_raw = get_data(sets[i])
         f = ft.exponential_decay_oscillator
         popt, cov = curve_fit(f,time,deviation_raw)
-        sets[i].fitted_graph_label += "\n" + r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {:.2f}\:$".format(popt[1],popt[2]) + r"$s^{-1}$"
+        sets[i].fitted_graph_label += "\n" + r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {}\:$".format(popt[1],popt[2]) + r"$s^{-1}$"
         offset = popt[-1]
         deviation = [d-offset for d in deviation_raw]
         popt[-1] = 0
