@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from os import listdir
+import pandas
 
 import sys
 sys.path.insert(0,"../../scripts")
@@ -134,7 +135,7 @@ if __name__ == "__main__":
         theoretical_amps = [amplitude_frequency(2*np.pi*freq, 2*np.pi*freq0s[i], dojs[i], betas[i]) for freq in xt]
         x = [freqs, xt]
         y = [amps, theoretical_amps]
-        #fig, ax = plot_multi(set_list[2], x, y, f_to_fit = amplitude_frequency, params = frequency_response_params)
+        fig, ax = plot_multi(set_list[2], x, y, f_to_fit = amplitude_frequency, params = frequency_response_params)
         
         phase_response = np.array([popt[2] for popt in oscillations_params_list])
         

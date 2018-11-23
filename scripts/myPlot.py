@@ -93,11 +93,11 @@ class Settings(object):
 '''==========================================
 =========================================='''
 
-def plot_multi (sets,x_values, y_values, x_err = [0], y_err = [0], f_to_fit = None, params = None):
+def plot_multi (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = None, params = None):
     fig, ax = plt.subplots()
 
     for i in range(len(x_values)):
-        if (x_err[0] != 0 or y_err[0] != 0):#if (sets.include_error):
+        if (len(x_err) != 0 or len(y_err) != 0):#if (sets.include_error):
             ax.errorbar(x_values[i], y_values[i], xerr=x_err[i], yerr=y_err[i], capsize = sets.error_bar_capsize, fmt = sets.graph_format[i], label = sets.graph_label[i])
         else:
              ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
@@ -127,10 +127,10 @@ def plot_multi (sets,x_values, y_values, x_err = [0], y_err = [0], f_to_fit = No
     
     return fig, ax
 
-def plot (sets,x_values, y_values, x_err = None, y_err = None, f_to_fit = None, params = None):
+def plot (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = None, params = None):
     fig, ax = plt.subplots()
     
-    if (x_err != None or y_err != None):#if (sets.include_error):
+    if (len(x_err) != 0 or len(y_err) != 0):#if (sets.include_error):
         ax.errorbar(x_values, y_values, xerr=x_err, yerr=y_err, capsize = sets.error_bar_capsize, fmt = sets.graph_format, label = sets.graph_label)
     else:
         ax.plot(x_values, y_values, sets.graph_format, label = sets.graph_label)
@@ -161,14 +161,14 @@ def plot (sets,x_values, y_values, x_err = None, y_err = None, f_to_fit = None, 
     
     return fig, ax
 
-def plot_subplots (sets,x_values, y_values, x_err = 0, y_err = 0, f_to_fit = None, params = None):
+def plot_subplots (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = None, params = None):
     j = 0
     fig, axs = plt.subplots(nrows = sets[j].subplots_nrows, ncols = sets[j].subplots_ncols, squeeze = False)
     print (np.shape(axs))
     for axr in axs:
         for ax in axr:
             try:
-                if (x_err != 0 or y_err != 0):#if (sets[j].include_error):
+                if (len(x_err) != 0 or len(y_err) != 0):#if (sets[j].include_error):
                     ax.errorbar(x_values[j], y_values[j], xerr=x_err[j], yerr=y_err[j], capsize = sets[j].error_bar_capsize, fmt = sets[j].graph_format, label = sets[j].graph_label)
                 else:
                     ax.plot(x_values[j], y_values[j], sets[j].graph_format, label = sets[j].graph_label)
