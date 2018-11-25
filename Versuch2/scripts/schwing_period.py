@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-import argparse
 
 import sys
 sys.path.insert(0,"../../scripts")
@@ -42,7 +41,7 @@ def get_settings():
 
     '''=================================='''
     general_sets_xy = general_sets.clone()
-    general_sets_xy.graph_format = ["b.","r-"]
+    general_sets_xy.graph_format = ["b.","r-"] #first one for raw datapoints and second for smoothed ones
     general_sets_xy.graph_label = ["","Schwingungskurve im Phasenraum "]#["Datenpunte", "Gefilterte Datenpunkte"]
     general_sets_xy.x_label = "Auslenkung (V)"
     general_sets_xy.y_label = "Winkelgeschwindigkeit (V)"
