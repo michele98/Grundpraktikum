@@ -14,9 +14,13 @@ import copy
                 SETUP SECTION
 =========================================='''
 class Settings(object):
+    '''======================================
+    defines how one subplot should look like.
+    For multiple subplots, multiple settings objects are needed
+    ========================================'''
     #find the csv file with the data
     dataset_folder = "../Versuch2/datasets/rest/"
-    dataset_file_name = "T0015.csv"
+    dataset_file_name = "T0015.csv"     #can be a list if multiple files are needed
     plot_folder = "../Versuch2/plots/"
 
     include_legend = True
@@ -28,7 +32,7 @@ class Settings(object):
     subplots_nrows = 1
     subplots_ncols = 1
 
-    #set the x and y data and errors
+    #set the x and y data and errors, can be lists if multiple funcitons are in one plot
     title_index = 15
     x_column_caption = "TIME"
     y_column_caption = "CH2"
@@ -39,12 +43,12 @@ class Settings(object):
     #set axis labels and graph appearence
     x_label = "X"
     y_label = "Y"
-    graph_format = "b." #respectively color and line style
+    graph_format = "b." #respectively color and line style, can be list
     error_bar_capsize = 2
     axes_label_fontsize = 18
     axes_tick_fontsize = 18
 
-    #fit setup
+    #fit setup (obsolete)
     def get_function_to_fit(self):
         return ft.cos_phase
     function_to_fit = ft.exponential_decay_oscillator
@@ -59,16 +63,16 @@ class Settings(object):
     #legend setup
     legend_location = "upper left"
     legend_fontsize = "x-large"
-    graph_label = "Datenpunkte"
-    fitted_graph_label = "Gefitteter Verlauf"#\na = 0.2278"
-    #indexes of datapoints to discard
+    graph_label = "Datenpunkte" #can be list
+    fitted_graph_label = ""#\na = 0.2278" (obsolete)
+    #indexes of datapoints to discard (obsolete)
     discard_datapoints_indexes = []
 
     def clone(self):
         return copy.copy(self)
 
     def log(self, txt_path, function_to_fit, popt, pcov, value_dict):
-        
+        '''to finish!!!'''
         #saves old content of txt file
         old_txt = open(txt_path, "r")
         old_content = old_txt.readlines()
@@ -123,6 +127,35 @@ def plot_multi (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = None
     if (sets.save_plot):
         #plot_file_name = plot_folder + dataset_file_name + x_column_caption + "-" + y_column_caption + ".png"
         plot_file_name = "{}{}-{}-{}-{}.png".format(sets.plot_folder, sets.dataset_file_name,f_to_fit.__name__, sets.x_column_caption, sets.y_column_caption)
+        plt.savefig(plot_file_name)#, bbox_inches ="tight")
+    
+    return fig, ax
+
+'''=========
+    preferred function to use!!!
+========'''
+def plot_multi_2 (sets,x_values, y_values, x_err = [], y_err = []):
+    fig, ax = plt.subplots()
+
+    for i in range(len(x_values)):
+        if (len(x_err) != 0 or len(y_err) != 0):#if (sets.include_error):
+            ax.errorbar(x_values[i], y_values[i], xerr=x_err[i], yerr=y_err[i], capsize = sets.error_bar_capsize, fmt = sets.graph_format[i], label = sets.graph_label[i])
+        else:
+             ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
+        
+        ax.tick_params(labelsize = sets.axes_tick_fontsize)
+        #ax.set_xlim(0,3)
+        plt.xlabel(sets.x_label, fontsize = sets.axes_label_fontsize)
+        plt.ylabel(sets.y_label, fontsize = sets.axes_label_fontsize)
+        plt.tight_layout() #makes room for larger label
+        
+    if (sets.include_legend):
+        legend = ax.legend(loc = sets.legend_location, fontsize = sets.legend_fontsize)
+
+    if (sets.save_plot):
+        #plot_file_name = plot_folder + dataset_file_name + x_column_caption + "-" + y_column_caption + ".png"
+        #plot_file_name = "{}{}-{}-{}-{}.png".format(sets.plot_folder, sets.dataset_file_name,f_to_fit.__name__, sets.x_column_caption, sets.y_column_caption)
+        plot_file_name = "plot.png"
         plt.savefig(plot_file_name)#, bbox_inches ="tight")
     
     return fig, ax

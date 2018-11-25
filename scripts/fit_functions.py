@@ -79,23 +79,7 @@ def sin_phase(x,A,freq,phi):
 
 def cos_phase_offset(x,A,freq,phi, offset):
     return A*np.cos(2*np.pi*freq*x+phi*180/np.pi) + offset
-'''
-def sin (x, a, b, c):
-    try:
-        #fit wants a list
-        return [a*math.sin(k/b+c) for k in x]
-    except:
-        #plotting wants a scalar
-        return a*(math.sin(x/b+c))
 
-def cos (x, a, b, c):
-    try:
-        #fit wants a list
-        return [a*math.cos(k/b+c) for k in x]
-    except:
-        #plotting wants a scalar
-        return a*(math.cos(x/b+c))
-'''
 def xpowerN(x,a,B):
     return B*(x**a)
 
