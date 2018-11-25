@@ -22,7 +22,7 @@ def get_settings():
 
     general_sets.graph_format = ["b.","g.","r-","y--"]
     general_sets.fit_graph_format = "r-"
-    general_sets.fitted_graph_label = r"$y = A\:\cos(\omega t + \phi)\: e^{-\beta t}$"
+    general_sets.fitted_graph_label = "Gefittete Kurve: " + r"$y = A\:\cos(\omega t + \phi)\: e^{-\beta t}$"
     general_sets.graph_label = ""
     general_sets.axes_label_fontsize = 20
     
@@ -38,7 +38,7 @@ def get_settings():
     sets3 = general_sets.clone()
     #sets3.graph_format = "b."
     sets3.dataset_file_name = "T0029.csv"
-    sets3.fitted_graph_label = r"$y=A\:\cos(\omega t + \phi)$"
+    sets3.fitted_graph_label = "Gefittete Kurve: " + r"$y=A\:\cos(\omega t + \phi)$"
 
     return sets1,sets2,sets3
 
@@ -49,7 +49,8 @@ def smooth(data,filter_length):
 def get_data(sets):
     #reads data from datasets specified in Settings
     dataset = dm.csv_to_list(sets.dataset_folder + sets.dataset_file_name)
-    time = dm.return_column (dataset, title = sets.x_column_caption, title_index = sets.title_index)
+    time_not_from_zero = dm.return_column (dataset, title = sets.x_column_caption, title_index = sets.title_index)
+    time = np.array(time_not_from_zero) - time_not_from_zero[0]
     deviation = dm.return_column (dataset, title = sets.y_column_caption, title_index = sets.title_index)
     return time, deviation
 
@@ -77,8 +78,8 @@ def plot_dampf_smooth(sets,filter_length):
     print ("This is smooth covariance: " + str(smooth_cov))
     sets.graph_label = ["","",
                         r"$y = A\:\cos(\omega t + \phi)\: e^{-\beta t}$" + "\n"
-                        r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {:.9f}\:$".format(raw_params[1],raw_params[2]) + r"$s^{-1}$",
-                        r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {:.9f}\:$".format(smooth_params[1],smooth_params[2]) + r"$s^{-1}$"]
+                        r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {:.3f}\:$".format(raw_params[1],raw_params[2]) + r"$s^{-1}$",
+                        r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {:.3f}\:$".format(smooth_params[1],smooth_params[2]) + r"$s^{-1}$"]
     fig, ax = plot_multi_2(sets = sets, x_values = [time,time_smooth,x_fit,x_fit], y_values = [deviation,deviation_smooth,y_fit,y_fit_smooth])
 
 def plot_dampf(sets):
@@ -93,6 +94,8 @@ def plot_dampf(sets):
     offset = raw_params[-1]
     deviation = [d-offset for d in deviation_raw]
     raw_params[-1] = 0
+
+    sets.fitted_graph_label += "\n" + r"$\nu= 2\pi\omega = {:.4f} \:Hz,\ \beta = {:.3f}\:$".format(raw_params[1],raw_params[2]) + r"$s^{-1}$"
 
     fig, ax = plot(sets, time, deviation, f_to_fit = f, params = raw_params)
 
@@ -120,7 +123,6 @@ def plot_frei_smooth(sets,filter_length):
                         r"$\nu= 2\pi\omega = {:.4f} \:Hz$".format(smooth_params[1])]
     fig, ax = plot_multi_2(sets = sets, x_values = [time,time_smooth,x_fit,x_fit], y_values = [deviation,deviation_smooth,y_fit,y_fit_smooth])
 
-
 def plot_frei(sets):
     f = ft.cos_phase
     time, deviation = get_data(sets)
@@ -131,6 +133,8 @@ def plot_frei(sets):
     sets.fitted_graph_label += "\n" + r"$\nu= 2\pi\omega = {:.4f} \:Hz$".format(popt[1])
     fig, ax = plot(sets, time, deviation, f_to_fit = f, params = popt)
 
+
+'''============================================='''
 if __name__ == "__main__":
     smoothen = True
     filter_length = 20
