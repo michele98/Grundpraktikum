@@ -69,7 +69,7 @@ class Settings(object):
     discard_datapoints_indexes = []
 
     def clone(self):
-        return copy.copy(self)
+        return copy.deepcopy(self)
 
     def log(self, txt_path, function_to_fit, popt, pcov, value_dict):
         '''to finish!!!'''
@@ -134,14 +134,18 @@ def plot_multi (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = None
 '''=========
     preferred function to use!!!
 ========'''
-def plot_multi_2 (sets,x_values, y_values, x_err = [], y_err = []):
+def plot_multi_2 (sets,x_values, y_values, x_err = [[]], y_err = [[]]):
     fig, ax = plt.subplots()
 
     for i in range(len(x_values)):
-        if (len(x_err) != 0 or len(y_err) != 0):#if (sets.include_error):
+        try:
+            errorbar = len(x_err[i]) !=0 or len(y_err[i]) !=0
+        except:
+            errorbar = len(x_err[0]) !=0 or len(y_err[0]) !=0
+        if (errorbar):#if (sets.include_error):
             ax.errorbar(x_values[i], y_values[i], xerr=x_err[i], yerr=y_err[i], capsize = sets.error_bar_capsize, fmt = sets.graph_format[i], label = sets.graph_label[i])
         else:
-             ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
+            ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
         
         ax.tick_params(labelsize = sets.axes_tick_fontsize)
         #ax.set_xlim(0,3)
