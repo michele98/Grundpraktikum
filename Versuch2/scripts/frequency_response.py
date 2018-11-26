@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0,"../../scripts")
 import data_manager as dm
 import fit_functions as ft
-from myPlot import Settings, plot, plot_multi_2, plot_subplots
+from myPlot import Settings, plot, plot_multi_2, plot_subplots, error_string
 
 
 def get_settings():
@@ -83,6 +83,7 @@ def phase_frequency_boh(w,beta,w0):
             ret[i] = (np.arctan(args[i])+np.pi)*180/np.pi
     return ret
 
+
 def get_data(sets):
     #reads data from datasets specified in Settings
     dataset = dm.csv_to_list(sets.dataset_folder + sets.dataset_file_name)
@@ -125,10 +126,15 @@ def plot_amplitude(sets, beta, f0):
     x_fit = frequency_axis/f0_fit
     y_fit = f(frequency_axis*2*np.pi, *params)/A0_fit
 
+    print (cov)
+    beta_fit_str = error_string(beta_fit, np.sqrt(cov[0][0]))
+    f0_fit_str = error_string(f0_fit, np.sqrt(cov[2][2]))
+    print("THIS IS BETA: " + str(beta_fit))
+    print ("THIS IS BETA ERR STRING: " + str(beta_fit_str))
     #v = np.array(amplitude)/(amplitude[0][1])
     v = np.array(amplitude)/A0_fit
 
-    sets.graph_label = ["", "aus gegebenen Daten: " + r"$\nu_0 = {:.3f},\ \beta = {:.3f}$".format(f0, beta),"aus fit: " + r"$\nu_0 = {:.3f}\ \beta = {:.3f}$".format(f0_fit, beta_fit)]
+    sets.graph_label = ["", "gegeben : " + r"$\nu_0 = {}(1),\ \beta = {:.4f}(2)$".format(f0, beta),"aus fit: " + r"$\nu_0 = {}\ \beta = {}$".format(f0_fit_str, beta_fit_str)]
 
     fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis, x_fit], y_values = [v[0], y_theoretical, y_fit],
             x_err = [n[1], [], []], y_err = [v[1], [], []])
@@ -145,7 +151,7 @@ def plot_phase(sets, beta, f0):
     n = np.array(frequency)/f0
     frequency_axis = np.linspace(min(frequency[0]), max(frequency[0]), curve_samples_number)
     n_axis = frequency_axis/f0
-    y_theoretical = phase_frequency(n_axis,np.zeros(len(n_axis)) + d)
+    y_theoretical = phase_frequency(n_axis, d)
     
     #Kurve aus Fit
     omega = np.array(frequency)*2*np.pi
@@ -154,7 +160,12 @@ def plot_phase(sets, beta, f0):
     f0_fit = omega0_fit/(2*np.pi)
     y_fit = phase_frequency_boh(frequency_axis*2*np.pi, *params)
 
-    sets.graph_label = ["","aus gegebenen Daten: " + r"$\nu_0 = {:.3f},\ \beta = {:.3f}$".format(f0,beta),"aus Fit: "+ r"$\nu_0 = {:.3f},\ \beta = {:.3f}$".format(f0_fit, beta_fit)]
+    beta_fit_str = error_string(beta_fit,np.sqrt(cov[0][0]))
+    f0_fit_str = error_string(f0_fit, np.sqrt(cov[1][1]))
+    print("THIS IS f0: " + str(f0_fit))
+    print ("THIS IS f0 ERR STRING: " + str(f0_fit_str))
+
+    sets.graph_label = ["","gegeben: " + r"$\nu_0 = {}(1),\ \beta = {:.4f}(2)$".format(f0,beta),"aus Fit: "+ r"$\nu_0 = {},\ \beta = {}$".format(f0_fit_str, beta_fit_str)]
 
     fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis, n_axis], y_values = [phase_difference[0], y_theoretical, y_fit],
             x_err = [n[1], [], []], y_err = [phase_difference[1], [], []])
@@ -162,7 +173,7 @@ def plot_phase(sets, beta, f0):
 
 if __name__ == "__main__":
     sets_list = get_settings()
-    betas = np.array([0.27622, 0.507317])
+    betas = np.array([0.27621, 0.50732])
     f0 = 0.85997
 
     print ("Gegebene: d = {}, {}".format(betas[0]/(2*np.pi*f0),betas[1]/(2*np.pi*f0)))

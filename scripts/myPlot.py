@@ -232,3 +232,45 @@ def plot_subplots (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = N
             plot_file_name = "{}{}-{}-{}-{}.png".format(sets[0].plot_folder, sets[0].dataset_file_name,f_to_fit.__name__, sets[0].x_column_caption, sets[0].y_column_caption)
             plt.savefig(plot_file_name)#, bbox_inches ="tight")
     return fig, axs
+
+def error_string(value, error):
+    #currently works only with errors<1
+    value_l = list(str(value))
+    error_l = list(str(error))
+
+    if (len(value_l)<len(error_l)):
+        value_l += ['0' for i in range(len(error_l)-len(value_l))]
+    #print ("THIS IS ERROR IN: " + str(error))
+    
+    index_v, index_e = 0,0
+    #part1
+    try:
+        if error_l[-4] == 'e':
+            #index = 1 + int("".join(error_l[-2:]))
+            ex = int("".join(error_l[-2:]))
+            additional_values = ['0']+['.']+['0' for i in range(ex-1)]
+            error_l = additional_values + error_l
+            del(error_l[-4:])
+    except:
+        print ("Boh")
+    
+    for i in range(len(error_l)):
+        if error_l[i]!='0' and error_l[i]!='.':
+            index_e, index_v = i,i
+            if(value_l[1] == '.'):
+                index_v += 1
+            break
+    
+    try:
+        if int(value_l[index_e + 1]) >= 5:
+            value_l[index_e] = str(int(value_l[index_e]) + 1)
+    except: print("boh")
+    try:
+        if int(error_l[index_e + 1]) >= 5:
+            error_l[index_e] = str(int(error_l[index_e]) + 1)
+    except: print("booh")
+
+    value_l = value_l[:index_v]
+    value_l.append('(' + str(error_l[index_e]) + ')')
+
+    return "".join(value_l)
