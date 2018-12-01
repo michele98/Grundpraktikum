@@ -66,11 +66,10 @@ def plot_line(sets):
     data = odrpack.RealData(distances2_n, v_avg_n, sx=distances2_s, sy=v_avg_s)
     myodr = odrpack.ODR(data,linear_model, beta0=[-1,1])
     output = myodr.run()
-    params_n = output.beta
-    params_s = output.sd_beta
+    params_n, params_s = output.beta, output.sd_beta
     params = unp.uarray(params_n, params_s)
 
-    x_fit = np.linspace(0, max(distances2_n), fit_samples)
+    x_fit = np.linspace(0, max(distances2_n)+0.1, fit_samples)
     y_fit = linear(params_n, x_fit)
     y_fit_up = linear(params_n+params_s, x_fit)
     y_fit_down = linear(params_n-params_s, x_fit)
@@ -80,21 +79,15 @@ def plot_line(sets):
     a_str = fmtr.format("{0:.1u}",params[0])
     v_str = fmtr.format("{0:.1u}",params[1])
 
-    sets.graph_label[1] = "y= ax + v mit\n " + r"$a={}\ 1/ms$".format(a_str) + " und " + r"$v={}\ m/s$".format(v_str)
-    fig, ax = plot_multi_2(sets, x_values = [distances2_n,x_fit,x_fit,x_fit], y_values = [v_avg_n,y_fit,y_fit_up,y_fit_down], x_err = [distances2_s,[],[],[]], y_err = [v_avg_s,[], [],[]])
-    ax.fill_between(x_fit,y_fit_up,y_fit_down, facecolor = "y", alpha = 0.1)
-
-
-    #x_fit = np.linspace(min(times_n), max(times_n), fit_samples)
-    #y_fit = f(x_fit, *popt)
-    #sets.x_label = "T (s)"
-    #sets.y_label = r"$D^2 \:(m^2)$"
-#
-    #fmtr = ShorthandFormatter()
-    #a_str = fmtr.format("{0:.1u}",inv_params[0])
-    #sets.graph_label[1] = r"$a={}$".format(a_str)
-#
-    #fig, ax = plot_multi_2(sets, x_values = [times_n, x_fit, [], []], y_values = [distances2_n, y_fit, [], []], x_err = [times_s,[],[],[]], y_err = [distances2_s,[],[],[]])
+    sets.graph_label[1] = "y= ax + v\n" + r"$a={}\:$".format(a_str) + r"$(ms)^{-1}\ und\ $" + r"$v={}\: m/s$".format(v_str)
+    #fig, ax = plot_multi_2(sets, x_values = [distances2_n,x_fit,x_fit,x_fit], y_values = [v_avg_n,y_fit,y_fit_up,y_fit_down], x_err = [distances2_s,[],[],[]], y_err = [v_avg_s,[], [],[]])
+    fig, ax = plot_multi_2(sets, x_values = [distances2_n,x_fit], y_values = [v_avg_n,y_fit], x_err = [distances2_s,[]], y_err = [v_avg_s,[]])
+    ax.fill_between(x_fit,y_fit_up,y_fit_down, facecolor = "r", alpha = 0.1)
+    ax.set_xbound(0,2.01)
+    ax.set_ybound(0.5,0.5599)
+    plt.subplots_adjust(left=0.16, right = 0.97, bottom = 0.15, top = 0.99)
+    #ax.spines['top'].set_visible(False)
+    #ax.spines['right'].set_visible(False)
 
 if __name__ == "__main__":
     sets = get_settings()
