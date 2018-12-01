@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
 import matplotlib.axes as axes
 import data_manager as dm
-import math
 import fit_functions as ft
 from scipy.optimize import curve_fit
 from scipy.stats import chisquare
 import numpy as np
 import copy
+import uncertainties
+import string
 
 '''zum fitten gut: lmfit'''
 
@@ -97,6 +98,18 @@ class Settings(object):
 '''==========================================
 =========================================='''
 
+class ShorthandFormatter(string.Formatter):
+
+    def format_field(self, value, format_spec):
+        if isinstance(value, uncertainties.UFloat):
+            return value.format(format_spec+'S')  # Shorthand option added
+        # Special formatting for other types can be added here (floats, etc.)
+        else:
+            # Usual formatting:
+            return super(ShorthandFormatter, self).format_field(
+                value, format_spec)
+
+
 def plot_multi (sets,x_values, y_values, x_err = [], y_err = [], f_to_fit = None, params = None):
     fig, ax = plt.subplots()
 
@@ -144,6 +157,7 @@ def plot_multi_2 (sets,x_values, y_values, x_err = [[]], y_err = [[]]):
             errorbar = len(x_err[0]) !=0 or len(y_err[0]) !=0
         if (errorbar):#if (sets.include_error):
             ax.errorbar(x_values[i], y_values[i], xerr=x_err[i], yerr=y_err[i], capsize = sets.error_bar_capsize, fmt = sets.graph_format[i], label = sets.graph_label[i])
+            #ax.set_ylim([min(y_values[i])-max(y_values[i])*0.05, max(y_values[i])*1.2])
         else:
             ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
         
@@ -251,8 +265,7 @@ def error_string(value, error):
             additional_values = ['0']+['.']+['0' for i in range(ex-1)]
             error_l = additional_values + error_l
             del(error_l[-4:])
-    except:
-        print ("Boh")
+    except: print ("Boh")
     
     for i in range(len(error_l)):
         if error_l[i]!='0' and error_l[i]!='.':

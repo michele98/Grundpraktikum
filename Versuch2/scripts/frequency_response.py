@@ -4,12 +4,15 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from os import listdir
 import pandas
+from uncertainties import ufloat
+from uncertainties.umath import *
+
 
 import sys
 sys.path.insert(0,"../../scripts")
 import data_manager as dm
 import fit_functions as ft
-from myPlot import Settings, plot, plot_multi_2, plot_subplots, error_string
+from myPlot import Settings, plot, plot_multi_2, error_string, ShorthandFormatter
 
 
 def get_settings():
@@ -23,7 +26,7 @@ def get_settings():
     general_sets.x_label = r"$\eta = \Omega/\omega_0$"
     general_sets.y_label = [u"Vergrößerungsfunktion V", r"$\alpha$" + " (deg)"]
 
-    general_sets.graph_format = ["bs","g-","r-"]
+    general_sets.graph_format = ["bs","r-","g-"]
     general_sets.fit_graph_format = "r-"
     general_sets.fitted_graph_label = "Gefittete Kurve: " + r"$y = A\:\cos(\omega t + \phi)\: e^{-\beta t}$"
     general_sets.graph_label = ["Resonanzkurve", "Phasenverschiebung"]
@@ -102,7 +105,7 @@ def get_data(sets):
 
     return frequency, amplitude, phase_difference
 
-def plot_amplitude(sets, beta, f0):
+def plot_amplitude(sets, beta, beta_err, f0, f0_err):
     curve_samples_number = 500
     #f = amplitude_frequency_non_normalized
     f = amplitude_frequency_boh
@@ -134,13 +137,26 @@ def plot_amplitude(sets, beta, f0):
     #v = np.array(amplitude)/(amplitude[0][1])
     v = np.array(amplitude)/A0_fit
 
-    sets.graph_label = ["", "gegeben : " + r"$\nu_0 = {}(1),\ \beta = {:.4f}(2)$".format(f0, beta),"aus fit: " + r"$\nu_0 = {}\ \beta = {}$".format(f0_fit_str, beta_fit_str)]
+    #uncertainties
+    fmtr = ShorthandFormatter()
+    beta_u = ufloat(beta, beta_err)
+    f0_u = ufloat(f0, f0_err)
+    fr_u = sqrt((2*np.pi*f0_u)**2 - 2*beta_u**2)/(2*np.pi)
+    k_u = exp(beta_u/f0)
+    beta_str = fmtr.format("{0:.1u}",beta_u)
+    fr_str = fmtr.format("{0:.1u}", fr_u)
+    
+    sets.graph_label = ["", r"$\nu_r = $" + fr_str + r"$\:Hz,$"+ r"$\ \beta = $" + beta_str + r"$\:s^{-1}$"]
+    #["",r"$\nu_0 = {},\ \beta = {}$".format(fr_str,beta_str)]
+    fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis], y_values = [v[0], y_theoretical],
+            x_err = [n[1], []], y_err = [v[1], []])
 
-    fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis, x_fit], y_values = [v[0], y_theoretical, y_fit],
-            x_err = [n[1], [], []], y_err = [v[1], [], []])
+    #sets.graph_label = ["", "gegeben : " + r"$\nu_0 = {}(1),\ \beta = {:.4f}(2)$".format(f0, beta),"aus fit: " + r"$\nu_0 = {}\ \beta = {}$".format(f0_fit_str, beta_fit_str)]
+    #fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis, x_fit], y_values = [v[0], y_theoretical, y_fit],
+    #        x_err = [n[1], [], []], y_err = [v[1], [], []])
 
 
-def plot_phase(sets, beta, f0):
+def plot_phase(sets, beta, beta_err, f0, f0_err):
     curve_samples_number = 500
     #f = phase_frequency_boh
     frequency, amplitude, phase_difference = get_data(sets) #each is 2D list with values and error
@@ -160,26 +176,43 @@ def plot_phase(sets, beta, f0):
     f0_fit = omega0_fit/(2*np.pi)
     y_fit = phase_frequency_boh(frequency_axis*2*np.pi, *params)
 
-    beta_fit_str = error_string(beta_fit,np.sqrt(cov[0][0]))
-    f0_fit_str = error_string(f0_fit, np.sqrt(cov[1][1]))
-    print("THIS IS f0: " + str(f0_fit))
-    print ("THIS IS f0 ERR STRING: " + str(f0_fit_str))
+    #uncertainties
+    fmtr = ShorthandFormatter()
+    beta_u = ufloat(beta, beta_err)
+    f0_u = ufloat(f0, f0_err)
+    fr_u = sqrt((2*np.pi*f0_u)**2 - 2*beta_u**2)/(2*np.pi)
+    print (fr_u)
+    tr_u = 1/fr_u
+    beta_str = fmtr.format("{0:.1u}",beta_u)
+    fr_str = fmtr.format("{0:.1u}", fr_u)
+    tr_str = fmtr.format("{0:.1u}", tr_u)
+    #
+    #beta_fit_str = error_string(beta_fit,np.sqrt(cov[0][0]))
+    #f0_fit_str = error_string(f0_fit, np.sqrt(cov[1][1]))
+    #print("THIS IS f0: " + str(f0_fit))
+    #print ("THIS IS f0 ERR STRING: " + str(f0_fit_str))
 
-    sets.graph_label = ["","gegeben: " + r"$\nu_0 = {}(1),\ \beta = {:.4f}(2)$".format(f0,beta),"aus Fit: "+ r"$\nu_0 = {},\ \beta = {}$".format(f0_fit_str, beta_fit_str)]
+    #f0 = np.sqrt((2*np.pi*f0)**2 - 2*beta**2)/2*np.pi
 
-    fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis, n_axis], y_values = [phase_difference[0], y_theoretical, y_fit],
-            x_err = [n[1], [], []], y_err = [phase_difference[1], [], []])
-
+    sets.graph_label = ["", r"$\nu_r = $" + fr_str + r"$\:Hz,$" + r"$\ \beta = $" + beta_str + r"$\:s^{-1}$"]
+    #sets.graph_label = ["",r"$\nu_0 = {},\ \beta = {}$".format(fr_str,beta_str)]
+    fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis], y_values = [phase_difference[0], y_theoretical],
+            x_err = [n[1], []], y_err = [phase_difference[1], []])
+    #sets.graph_label = ["","gegeben: " + r"$\nu_0 = {}(1),\ \beta = {:.4f}(2)$".format(f0,beta),"aus Fit: "+ r"$\nu_0 = {},\ \beta = {}$".format(f0_fit_str, beta_fit_str)]
+    #fig, ax = plot_multi_2(sets, x_values = [n[0], n_axis, n_axis], y_values = [phase_difference[0], y_theoretical, y_fit],
+    #        x_err = [n[1], [], []], y_err = [phase_difference[1], [], []])
 
 if __name__ == "__main__":
     sets_list = get_settings()
     betas = np.array([0.27621, 0.50732])
+    betas_err = np.array([0.0001, 0.0002])
     f0 = 0.85997
+    f0_err = 0.00001
 
     print ("Gegebene: d = {}, {}".format(betas[0]/(2*np.pi*f0),betas[1]/(2*np.pi*f0)))
 
     for i in range(2):
-        plot_amplitude(sets_list[i], betas[i],f0)
-        plot_phase(sets_list[i+2], betas[i], f0)
+        plot_amplitude(sets_list[i], betas[i], betas_err[i], f0, f0_err)
+        plot_phase(sets_list[i+2], betas[i], betas_err[i], f0, f0_err)
 
     plt.show()
