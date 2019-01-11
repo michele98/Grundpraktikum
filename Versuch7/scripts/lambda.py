@@ -39,7 +39,7 @@ def linear2(B,x):
     return B[0]*x + B[1]
 
 def get_data():
-    xls = pd.ExcelFile("../datasets/lambda.xlsx")
+    xls = pd.ExcelFile("../datasets/lambda-corr.xlsx")
     df1 = pd.read_excel(xls, sheet_name = 'Lambda2')
     df2 = pd.read_excel(xls, sheet_name = 'Lambda4')
     return df1, df2
@@ -55,7 +55,7 @@ def plot_lambda_2(sets, df):
     data = odrpack.RealData(p, f, sx=p_err, sy=f_err)
     myodr = odrpack.ODR(data,linear_model, beta0=[2])
     output = myodr.run()
-    params_n, params_s = output.beta, output.sd_beta
+    params_n, params_s = output.beta, output.sd_beta*5
     params = unp.uarray(params_n, params_s)
     #print (params)
 
@@ -66,7 +66,7 @@ def plot_lambda_2(sets, df):
     
     fmtr = ShorthandFormatter()
     label_str = fmtr.format('{0:.1u}', params[0])
-    sets.graph_label = ['',r"$y=Ax,\quad with\ A=$" + label_str + " (deg L)/g",'','']
+    sets.graph_label = ['',r"$y=Ax,\quad with\ A=$" + label_str,'','']
     x_axis = [p, x_fit]
     y_axis = [f, y_fit]
     x_axis_err = [p_err,[]]
@@ -117,7 +117,7 @@ def plot_lambda_4(sets, df):
     label1_str = fmtr.format('{0:.1u}', params1[0])
     label2_str1 = fmtr.format('{0:.1u}', params2[0])
     label2_str2 = fmtr.format('{0:.1u}', params2[1])
-    sets.graph_label = ['',r"$y=Ax,\quad with\ A=$" + label1_str + " (deg L)/g", '', r"$y=Ax + b,\quad with\ A=$" + label2_str1 + " (deg L)/g\nand " + r'$b=$' + label2_str2]
+    sets.graph_label = ['',r"$y=Ax,\quad with\ A=$" + label1_str, '', r"$y=Ax + b,\quad with\ A=$" + label2_str1 + "\nand " + r'$b=$' + label2_str2 + 'deg']
     x_axis = [p1, x_fit1, p2, x_fit2]
     y_axis = [f1, y_fit1, f2, y_fit2]
     x_axis_err = [p1_err,[], p2_err, []]
@@ -135,6 +135,6 @@ def plot_lambda_4(sets, df):
 if __name__ == "__main__":
     sets1, sets2 = get_settings()
     df1, df2 = get_data()
-    #plot_lambda_2(sets1, df1)
+    plot_lambda_2(sets1, df1)
     plot_lambda_4(sets2, df2)
     plt.show()
