@@ -43,7 +43,7 @@ def get_data():
     return df1, df2
 
 
-def plot_uncorrected_fit(sets, df):
+def plot_fit(sets, df):
     t_th, t_th_err = np.array(df['t_th'])[:-1], np.array(df['t_th_err'])[:-1]
     t_gas, t_gas_err = np.array(df['t_gas'])[:-1], np.array(df['t_gas_err'])[:-1]
     
@@ -97,13 +97,16 @@ def plot_both(sets, df1, df2):
 def plot_heat_up(sets, df):
     t_th, t_th_err = np.array(df['t_th'])[:-1], np.array(df2['t_th_err'])[:-1]
     t_gas, t_gas_err = np.array(df['t_gas'])[:-1], np.array(df2['t_gas_err'])[:-1]
-    
-    fig, ax = plot_multi_2(sets, [t_gas,t_gas], [t_th,t_th], [t_gas_err,[]], [t_th_err,[]])
+    x = np.linspace(min(t_gas), max(t_gas), 2)
+    y=x
+    fig, ax = plot_multi_2(sets, [t_gas,x], [t_th,y], [t_gas_err,[]], [t_th_err,[]])
     #ax.plot([0,100],[0,100], 'y--')
 
 if __name__ == "__main__":
     sets1, sets2 = get_settings()
     df1, df2 = get_data()
-    #plot_uncorrected(sets1, [df1,df2])
-    plot_heat_up(sets1, df1)
+    plot_both(sets1, df1,df2)
+    #plot_heat_up(sets1, df1)
+    plot_fit(sets1, df1)
+    plot_fit(sets1, df2)
     plt.show()
