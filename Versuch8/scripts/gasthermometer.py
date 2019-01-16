@@ -144,7 +144,7 @@ def plot_difference(sets, df):
 
 if __name__ == "__main__":
     sets1, sets2, sets3, sets4 = get_settings()
-    df1, df2 = get_data()
+    df1, df2 = get_data() #df1 is heat up and df2 is cool down
     #plot_calibration(sets1, df1)
     plot_calibration(sets2, df2)
     #plot_difference(sets3, df1)
