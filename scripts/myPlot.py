@@ -44,6 +44,8 @@ class Settings(object):
     #set axis labels and graph appearence
     x_label = "X"
     y_label = "Y"
+    title = ''
+    title_fontsize = 14
     graph_format = "b." #respectively color and line style, can be list
     error_bar_capsize = 2
     axes_label_fontsize = 18
@@ -162,6 +164,7 @@ def plot_multi_2 (sets,x_values, y_values, x_err = [[]], y_err = [[]]):
             ax.plot(x_values[i], y_values[i], sets.graph_format[i], label = sets.graph_label[i])
         
         ax.tick_params(labelsize = sets.axes_tick_fontsize)
+        ax.set_title(sets.title, fontsize = sets.title_fontsize)
         #ax.set_xlim(0,3)
         plt.xlabel(sets.x_label, fontsize = sets.axes_label_fontsize)
         plt.ylabel(sets.y_label, fontsize = sets.axes_label_fontsize)

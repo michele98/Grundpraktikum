@@ -3,6 +3,7 @@ import numpy as np
 import scipy.odr.odrpack as odrpack
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+import matplotlib.patches as ptc
 from os import listdir
 import pandas as pd
 from uncertainties import ufloat
@@ -18,19 +19,32 @@ from myPlot import Settings, plot_multi_2, ShorthandFormatter
 
 def get_settings():
     general_sets = Settings()
-    general_sets.graph_format = ['b.', 'r-','g-','y--']
+    general_sets.graph_format = ['b.', 'r-','g.','y-']
+    general_sets.x_label = r'$t_{gas}$ in $^{\circ}C$'
+    general_sets.y_label = r'$t_{Hg}$ in $^{\circ}C$'
+    general_sets.title_fontsize = 18
     
-    '''----- sets1: Volume ------------'''
+    '''----- sets1: Eichkurve beim Aufwarmen ------------'''
     sets1 = general_sets.clone()
-    sets1.x_label = r'$t_{gas\ thermometer}$ in $^{\circ}C$'
-    sets1.y_label = r'$t_{mercury\ thermomether}$ in $^{\circ}C$'
+    #sets1.title = u"Eichurve beim Aufwärmen"
     
-    '''----- sets2: Concentration -----'''
+    '''----- sets2: Eichkurve beim Abkuhlen -----'''
     sets2 = general_sets.clone()
-    sets2.x_label = 'Sugar concentration (g/100ml)'
-    sets2.y_label = 'Polarization axis rotation (deg)'
+    #sets2.title = u"Eichkurve beim Abkühlen"
 
-    return sets1, sets2
+    '''----- sets3: Delta t beim Aufwarmen -----'''
+    sets3 = general_sets.clone()
+    #sets3.title = u"Differenz beim Aufwärmen"
+    sets3.graph_format = ['b.', 'g.','r-']
+
+    sets3.x_label = r'$t_{Hg}$ in $^{\circ}C$'
+    sets3.y_label = r'$\Delta t = t_{gas} - t_{Hg}$ in K'
+    
+    '''----- sets3: Delta t beim Abkuhlen -----'''
+    sets4 = sets3.clone()
+    #sets4.title = u"Differenz beim Abkühlen"
+
+    return sets1, sets2, sets3, sets4
 
 def linear(B,x):
     return B[0]*x + B[1]
@@ -43,70 +57,96 @@ def get_data():
     return df1, df2
 
 
-def plot_fit(sets, df):
-    t_th, t_th_err = np.array(df['t_th'])[:-1], np.array(df['t_th_err'])[:-1]
-    t_gas, t_gas_err = np.array(df['t_gas'])[:-1], np.array(df['t_gas_err'])[:-1]
-    
+def plot_calibration(sets, df):
+    #list comprehension, because for some reason not all data is made of floats
+    t_gas, t_gas_err = [float(a) for a in df['t_gas'][:-1]], [float(a) for a in df['t_gas_err'][:-1]]
+    t_gas_c, t_gas_c_err = [float(a) for a in df['t_gas_corr'][:-1]], [float(a) for a in df['t_gas_corr_err'][:-1]]
+    t_th, t_th_err = [float(a) for a in df['t_th'][:-1]], [float(a) for a in df['t_th_err'][:-1]]
+
     #ODR fitting
     linear_model = odrpack.Model(linear)
-    data = odrpack.RealData(conc, rot, sx=conc_err, sy=rot_err)
-    myodr = odrpack.ODR(data,linear_model, beta0=[3.1])
+    data = odrpack.RealData(t_gas, t_th, sx=t_gas_err, sy=t_th_err)
+    myodr = odrpack.ODR(data,linear_model, beta0=[1,1])
     output = myodr.run()
     params_n, params_s = output.beta, output.sd_beta
     params = unp.uarray(params_n, params_s)
-    #print (params)
+    #fitting for corrected t_gas values
+    data = odrpack.RealData(t_gas_c, t_th, sx=t_gas_c_err, sy=t_th_err)
+    myodr = odrpack.ODR(data,linear_model, beta0=[1,1])
+    output = myodr.run()
+    params_c_n, params_c_s = output.beta, output.sd_beta
+    params_c = unp.uarray(params_c_n, params_c_s)
 
-    popt, cov = curve_fit(ft.linear1, conc, rot, sigma = rot_err, absolute_sigma = True)
-    x_fit = np.linspace(min(conc)*0.6, max(conc)*1.1, 1000)
+
+    x_fit = np.linspace(min(t_gas), max(t_gas)*1.1, 10)
     y_fit = linear(params_n, x_fit)
     y_fit_up = linear(params_n + params_s, x_fit)
     y_fit_down = linear(params_n - params_s, x_fit)
-    y_fit_c = ft.linear1(x_fit, *popt)
-    y_fit_c_up = ft.linear1(x_fit, *(popt + np.sqrt(cov[0][0])))
-    y_fit_c_down = ft.linear1(x_fit, *(popt - np.sqrt(cov[0][0])))
+
+    x_fit_c = np.linspace(min(t_gas_c)-10, max(t_gas_c)*1.1, 10)
+    y_fit_c = linear(params_c_n, x_fit_c)
+    y_fit_c_up = linear(params_c_n + params_c_s, x_fit_c)
+    y_fit_c_down = linear(params_c_n - params_c_s, x_fit_c)
+    #y_fit = ft.linear2(x_fit, *popt)
     
     fmtr = ShorthandFormatter()
-    label_str = fmtr.format('{0:.1u}', params[0])
-    sets.graph_label = ['',r"$y=Ax,\quad with\ A=$" + label_str + " deg 100mL/g",'','']
-    x_axis = [conc, x_fit]
-    y_axis = [rot, y_fit]
-    x_axis_err = [conc_err,[]]
-    y_axis_err = [rot_err,[]]
-    fig, ax = plot_multi_2(sets, x_axis, y_axis, x_axis_err, y_axis_err)
-    ax.fill_between(x_fit,y_fit_up,y_fit_down, facecolor = "r", alpha = 0.1)
-    #ax.fill_between(x_fit,y_fit_c_up,y_fit_c_down, facecolor = "r", alpha = 0.1)
+    params_str = fmtr.format('{0:.1u}', params[0])
+    params_str_b = fmtr.format('{0:.1u}', params[1])
+    params_c_str = fmtr.format('{0:.1u}', params_c[0])
+    params_c_str_b = fmtr.format('{0:.1u}', params_c[1])
+    
+    #sets.graph_label = ['',r"Aufw\"rmen, $y=Ax,\quad with\ A=$" + params_str, '', r"Abk\"hlen $y=Ax,\quad with\ A=$" + params_c_str]
+    sets.graph_label = ['Unkorrigierte Werte',"$A = {}$, $b = {}\,K$".format(params_str, params_str_b), 'Korrigierte Werte', r"$A = {}, b = {}\,K$".format(params_c_str, params_c_str_b)]
+    
+    x_axis = [t_gas, x_fit, t_gas_c, x_fit_c]
+    y_axis = [t_th, y_fit, t_th, y_fit_c]
+    x_axis_err = [t_gas_err,[], t_gas_c_err, []]
+    y_axis_err = [t_th_err,[], t_th_err, []]
 
-    #ax.set_xbound(90,420)
-    ax.set_xbound(9,42)
-    ax.set_ybound(9,55)
-    plt.subplots_adjust(left=0.12, right = 0.99, bottom = 0.14, top = 0.99)
+    fig, ax = plot_multi_2(sets, x_axis, y_axis, x_axis_err, y_axis_err)
+    ax.fill_between(x_fit,y_fit_up,y_fit_down, facecolor = "r", alpha = 0.2)
+    ax.fill_between(x_fit_c,y_fit_c_up,y_fit_c_down, facecolor = "y", alpha = 0.4)
+
+    ax.plot([0],[3], 'w.')
+    legend = ax.legend(loc = sets.legend_location, fontsize = sets.legend_fontsize, title = 'Fit mit y = Ax + b')
+    legend.get_title().set_fontsize('14')
+    ax.set_xbound(-1,104)
+    ax.set_ybound(-1,120)
+    plt.subplots_adjust(left=0.15, right = 0.99, bottom = 0.16)
+
     #ax.spines['top'].set_visible(False)
     #ax.spines['right'].set_visible(False)
 
-def plot_both(sets, df1, df2):
-    t_th_un = zip(list((df1['t_th'])[:-1]) + list((df2['t_th'])[:-1]), list((df1['t_th_err'])[:-1]) + list((df2['t_th_err'])[:-1]))
-    t_gas_un = zip(list((df1['t_gas'])[:-1]) + list((df2['t_gas'])[:-1]), list((df1['t_gas_err'])[:-1]) + list((df2['t_gas_err'])[:-1]))
-    t_th_un.sort(), t_gas_un.sort()
+def plot_difference(sets, df):
+    #list comprehension, because for some reason not all data is made of floats
+    delta_t, delta_t_err = [float(a) for a in df['delta_t'][:-1]], [float(a) for a in df['delta_t_err'][:-1]]
+    delta_t_c, delta_t_c_err = [float(a) for a in df['delta_t_corr'][:-1]], [float(a) for a in df['delta_t_corr_err'][:-1]]
+    t_th, t_th_err = [float(a) for a in df['t_th'][:-1]], [float(a) for a in df['t_th_err'][:-1]]
+    
+    x_axis = [t_th, t_th, [-10,110]]
+    y_axis = [delta_t, delta_t_c, [0,0]]
+    x_axis_err = [t_th_err, t_th_err,[]]
+    y_axis_err = [delta_t_err, delta_t_c_err,[]]
 
-    t_th, t_th_err = zip(*t_th_un)[0], zip(*t_th_un)[1]
-    t_gas, t_gas_err = zip(*t_gas_un)[0], zip(*t_gas_un)[1]
+    sets.graph_label = ['Unkorrigierte Werte','Korrigierte Werte','']
 
-    fig, ax = plot_multi_2(sets, [t_gas,t_gas], [t_th,t_th], [t_gas_err,[]], [t_th_err,[]])
-    ax.plot([0,100],[0,100], 'y--')
+    fig, ax = plot_multi_2(sets, x_axis, y_axis, x_axis_err, y_axis_err)
+    #ax.fill_between(x_fit,y_fit_up,y_fit_down, facecolor = "r", alpha = 0.2)
+    #ax.fill_between(x_fit_c,y_fit_c_up,y_fit_c_down, facecolor = "y", alpha = 0.4)
 
-def plot_heat_up(sets, df):
-    t_th, t_th_err = np.array(df['t_th'])[:-1], np.array(df2['t_th_err'])[:-1]
-    t_gas, t_gas_err = np.array(df['t_gas'])[:-1], np.array(df2['t_gas_err'])[:-1]
-    x = np.linspace(min(t_gas), max(t_gas), 2)
-    y=x
-    fig, ax = plot_multi_2(sets, [t_gas,x], [t_th,y], [t_gas_err,[]], [t_th_err,[]])
-    #ax.plot([0,100],[0,100], 'y--')
+    legend = ax.legend(loc = sets.legend_location, fontsize = sets.legend_fontsize, title = '')
+    legend.get_title().set_fontsize('14')
+
+    ax.set_xbound(-3,103)
+    plt.subplots_adjust(left=0.15, right = 0.99, bottom = 0.15)
+    #ax.spines['top'].set_visible(False)
+    #ax.spines['right'].set_visible(False)
 
 if __name__ == "__main__":
-    sets1, sets2 = get_settings()
+    sets1, sets2, sets3, sets4 = get_settings()
     df1, df2 = get_data()
-    plot_both(sets1, df1,df2)
-    #plot_heat_up(sets1, df1)
-    plot_fit(sets1, df1)
-    plot_fit(sets1, df2)
+    #plot_calibration(sets1, df1)
+    plot_calibration(sets2, df2)
+    #plot_difference(sets3, df1)
+    plot_difference(sets4, df2)
     plt.show()
