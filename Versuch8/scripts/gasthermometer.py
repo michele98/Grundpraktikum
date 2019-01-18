@@ -123,7 +123,7 @@ def plot_difference(sets, df):
     delta_t_c, delta_t_c_err = [float(a) for a in df['delta_t_corr'][:-1]], [float(a) for a in df['delta_t_corr_err'][:-1]]
     t_th, t_th_err = [float(a) for a in df['t_th'][:-1]], [float(a) for a in df['t_th_err'][:-1]]
     
-    x_axis = [t_th, t_th, [-10,110]]
+    x_axis = [t_th, t_th, [-10,110]] #plots also a straight line at 0
     y_axis = [delta_t, delta_t_c, [0,0]]
     x_axis_err = [t_th_err, t_th_err,[]]
     y_axis_err = [delta_t_err, delta_t_c_err,[]]
