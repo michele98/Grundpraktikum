@@ -70,13 +70,14 @@ def plot_calibration(sets, df):
     output = myodr.run()
     params_n, params_s = output.beta, output.sd_beta
     params = unp.uarray(params_n, params_s)
+    res_var = output.res_var
     #fitting for corrected t_gas values
     data = odrpack.RealData(t_gas_c, t_th, sx=t_gas_c_err, sy=t_th_err)
     myodr = odrpack.ODR(data,linear_model, beta0=[1,1])
     output = myodr.run()
     params_c_n, params_c_s = output.beta, output.sd_beta
     params_c = unp.uarray(params_c_n, params_c_s)
-
+    res_var_c = output.res_var
 
     x_fit = np.linspace(min(t_gas), max(t_gas)*1.1, 10)
     y_fit = linear(params_n, x_fit)
@@ -96,7 +97,7 @@ def plot_calibration(sets, df):
     params_c_str_b = fmtr.format('{0:.1u}', params_c[1])
     
     #sets.graph_label = ['',r"Aufw\"rmen, $y=Ax,\quad with\ A=$" + params_str, '', r"Abk\"hlen $y=Ax,\quad with\ A=$" + params_c_str]
-    sets.graph_label = ['Unkorrigierte Werte',"$A = {}$, $b = {}\,K$".format(params_str, params_str_b), 'Korrigierte Werte', r"$A = {}, b = {}\,K$".format(params_c_str, params_c_str_b)]
+    sets.graph_label = ['Unkorrigierte Werte',"$A = {}$, $b = {}\,K$, $\chi^2={:1.3f}$".format(params_str, params_str_b,res_var), 'Korrigierte Werte', r"$A = {}, b = {}\,K$, $\chi^2={:1.3f}$".format(params_c_str, params_c_str_b, res_var_c)]
     
     x_axis = [t_gas, x_fit, t_gas_c, x_fit_c]
     y_axis = [t_th, y_fit, t_th, y_fit_c]
@@ -145,8 +146,8 @@ def plot_difference(sets, df):
 if __name__ == "__main__":
     sets1, sets2, sets3, sets4 = get_settings()
     df1, df2 = get_data() #df1 is heat up and df2 is cool down
-    #plot_calibration(sets1, df1)
-    plot_calibration(sets2, df2)
+    plot_calibration(sets1, df1)
+    #plot_calibration(sets2, df2)
     #plot_difference(sets3, df1)
-    plot_difference(sets4, df2)
+    #plot_difference(sets4, df2)
     plt.show()
