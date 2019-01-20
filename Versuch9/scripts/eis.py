@@ -21,13 +21,8 @@ def get_data():
     df1 = pd.read_excel(xls, sheet_name = 'Verdampfungswarme')
     df2 = pd.read_excel(xls, sheet_name = 'Schmelzwarme')
     dfs = {'Dampf': df1, 'Eis': df2}
-    #time = np.array([float(a) for a in df['time'][1:]])
-    #time_err = np.array([float(a)/60 for a in df['time_err'][1:]]) #convert time from sec to min
-    #temp = np.array([float(a) for a in df['temp'][1:]])
-    #temp_err = np.array([float(a) for a in df['temp_err'][1:]])
-    #return time, time_err, temp, temp_err
 
-    previous_datapoints = 8
+    previous_datapoints = 12
     time_before = [float(a) for a in dfs['Dampf']['time'][-previous_datapoints:]]
     time_before_err = [float(a)/60 for a in dfs['Dampf']['time_err'][-previous_datapoints:]]
     temp_before = [float(a) for a in dfs['Dampf']['temp'][-previous_datapoints:]]
@@ -44,7 +39,6 @@ def get_data():
     temp_err += temp_before_err
     z = zip(time, time_err, temp, temp_err)
     z.sort()
-    print (z)
     return np.array(zip(*z)[0])-time_before[0], np.array(zip(*z)[1]), np.array(zip(*z)[2]), np.array(zip(*z)[3])
     #return np.array(time)-time[0], np.array(time_err), np.array(temp), np.array(temp_err)
 
@@ -69,16 +63,22 @@ def find_transition(x,y,p1,p2):
     #Al, Ar = 0,0
     min_index = 0
     m = 10000
+    Als, Ars = [],[]
     for j in range(1,dim):
         Ar, Al = 0,0
         for i in range(1,j):
             Al += (x[i]-x[i-1])*((y[i]+y[i-1])/2-linear(p1, (x[i]+x[i-1])/2))
         for i in range(1,dim-j):
             Ar -= (x[dim-i]-x[dim-i-1])*((y[dim-i]+y[dim-i-1])/2-linear(p2, (x[dim-i]+x[dim-i-1])/2))
+        #print (Al, Ar, Al-Ar)
+        Als.append(Al)
+        Ars.append(Ar)
         if abs(Al-Ar)<m:
             min_index = j
             m = abs(Al-Ar)
-    return min_index
+    A = (y[min_index]-y[min_index-1])/(x[min_index]-x[min_index-1])
+    B = 0.5*(y[min_index]+y[min_index-1]-A*(x[min_index]+x[min_index-1]))
+    return -(B/A+np.sqrt(B*B/(A*A)+0.5*(x[min_index-1]**2+x[min_index]**2)+(x[min_index-1]+x[min_index])*B/A))
 
 def find_jumps(y):
     threshold = 2
@@ -99,7 +99,7 @@ def find_jumps(y):
             jump_ratio = abs((y[i]-y[i-1-equals])/(y[i-equals-1]-y[i-2-equals2]))
             if jump_ratio > threshold:
                 if not i1_set:
-                    i1 = i
+                    i1 = i-1
                     i1_set = True
             elif jump_ratio < 0.3:
                 i2 = i
@@ -119,7 +119,7 @@ def fit_odr(f,x,y, xs, ys, beta_0):
 def plot_curve():
     time, time_err, temp, temp_err = get_data()
     fmtr = ShorthandFormatter()
-    print (time)
+    #print (time)
     
     i, i2 = find_jumps(temp)
     #i = 8
@@ -130,8 +130,7 @@ def plot_curve():
     output_before = fit_odr(linear, time[exclude_first:i], temp[exclude_first:i], time_err[exclude_first:i], temp_err[exclude_first:i], [1,0])
     output_after = fit_odr(linear, time[-last_values:], temp[-last_values:], time_err[-last_values:], temp_err[-last_values:], [1,0])
 
-    i_transition = find_transition(time, temp, output_before.beta, output_after.beta)
-    t_transition = (time[i_transition]+time[i_transition-1])/2
+    t_transition = find_transition(time, temp, output_before.beta, output_after.beta)
 
     #output_before = fit_odr(linear, time[exclude_first:i], temp[exclude_first:i], time_err[exclude_first:i], temp_err[exclude_first:i], [1,0])
     #output_after = fit_odr(linear, time[-last_values:], temp[-last_values:], time_err[-last_values:], temp_err[-last_values:], [1,0])
@@ -173,8 +172,8 @@ def plot_curve():
     ax.fill_between(x_fit_before, y_fit_before_down, y_fit_before_up, facecolor = 'r', alpha = 0.2)
     ax.fill_between(x_fit_after, y_fit_after_down, y_fit_after_up, facecolor = 'g', alpha = 0.2)
 
-    ax.set_xbound(-0.5,15.5)
-    ax.set_ybound(16,45)
+    ax.set_xbound(-0.5,15.7)
+    ax.set_ybound(16,44.9)
     ax.tick_params(labelsize = 18)
     #labels
     ax.set_xlabel('Zeit in min', fontsize = 18)
@@ -182,7 +181,7 @@ def plot_curve():
     plt.tight_layout()
     plt.subplots_adjust(left = 0.12, right = 0.99, bottom = 0.16, top = 0.99)
 
-    legend = ax.legend(loc = 'center left', fontsize = 'large', title = r'$l = ${0} J/g'.format(l_str))
+    legend = ax.legend(loc = 'center right', fontsize = 'large', title = r'$l = ${0} J/g'.format(l_str))
     legend.get_title().set_fontsize('14')
 
 
