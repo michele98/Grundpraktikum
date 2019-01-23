@@ -52,13 +52,13 @@ def linear(B, x):
 
 def fit_odr(f,x,y, xs, ys, beta_0):
     #ODR fitting
-    print ('\n')
+    #print ('\n')
     model = odrpack.Model(f)
     data = odrpack.RealData(x, y, sx=xs, sy=ys)
     myodr = odrpack.ODR(data, model, beta0=beta_0)
     output = myodr.run()
     params_n, params_s = output.beta, output.sd_beta
-    output.pprint()
+    #output.pprint()
     res_var = output.res_var
     return unp.uarray(params_n, params_s), res_var
 
@@ -98,6 +98,12 @@ def plot_curve():
     w_str = fmtr.format('{0:.1u}', w/1000) #convert in kJ/K
     m_eq_str = fmtr.format('{0:.1u}', m_eq/1000) #convert in kg
 
+    #calculates T1 and Tm
+    t1 = linear(params_before, t_transition)
+    tm = linear(params_after, t_transition)
+    t1_str = fmtr.format('{0:.1u}', t1)
+    tm_str = fmtr.format('{0:.1u}', tm)
+
     #setting up plot
     fig, ax = plt.subplots()
     ax.errorbar(time[exclude_first:i], temp[exclude_first:i], time_err[exclude_first:i], temp_err[exclude_first:i], 'b.', label = 'im Fit verwendete Datenpunkte')
@@ -110,7 +116,7 @@ def plot_curve():
     ax.plot(time[i:], linear(unp.nominal_values(params_before), time[i:]), 'r--')
     ax.plot(x_fit_after, y_fit_after, 'g-', label = r'$A={}\, ^\circ\! C/s$, $b={}\, ^\circ\! C$, $\chi^2={:1.3f}$'.format(params_after_str[0],params_after_str[1], res_after))
     ax.plot(time[:i], linear(unp.nominal_values(params_after), time[:i]), 'g--')
-    ax.plot([t_transition,t_transition], [0,30], 'k--', label = u'Übergangszeit')
+    ax.plot([t_transition,t_transition], [0,30], 'k--', label = u'Übergangszeit: $T_1 = {}\, ^\circ\! C$, $T_m = {}\, ^\circ\! C$'.format(t1_str, tm_str))
 
     ax.fill_between(x_fit_before, y_fit_before_down, y_fit_before_up, facecolor = 'r', alpha = 0.2)
     ax.fill_between(x_fit_after, y_fit_after_down, y_fit_after_up, facecolor = 'g', alpha = 0.2)

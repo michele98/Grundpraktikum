@@ -155,6 +155,12 @@ def plot_curve():
     l = calculate_l(params_before, params_after, t_transition)
     l_str = fmtr.format('{0:.1u}', l/1000) #convert from kJ/kg to MJ/kg
 
+    #calculates T1 and Tm
+    t1 = linear(params_before, t_transition)
+    tm = linear(params_after, t_transition)
+    t1_str = fmtr.format('{0:.1u}', t1)
+    tm_str = fmtr.format('{0:.1u}', tm)
+
     #setting up plot
     fig, ax = plt.subplots()
     ax.errorbar(time[exclude_first:i], temp[exclude_first:i], time_err[exclude_first:i], temp_err[exclude_first:i], 'b.', label = 'im Fit verwendete Datenpunkte')
@@ -167,8 +173,9 @@ def plot_curve():
     ax.plot(time[i:], linear(unp.nominal_values(params_before), time[i:]), 'r--')
     ax.plot(x_fit_after, y_fit_after, 'g-', label = r'$A={}\, ^\circ\! C/s$, $b={}\, ^\circ\! C$, $\chi^2={:1.3f}$'.format(params_after_str[0],params_after_str[1], res_after))
     ax.plot(time[:-last_values], linear(unp.nominal_values(params_after), time[:-last_values]), 'g--')
-    ax.plot([t_transition,t_transition], [10,50], 'k--', label = u'Übergangszeit' + r'$\:={:.1f}(3)$ min'.format(t_transition))
-
+    #ax.plot([t_transition,t_transition], [10,50], 'k--', label = u'Übergangszeit' + r'$\:={:.1f}(3)$ min'.format(t_transition))
+    ax.plot([t_transition,t_transition], [10,50], 'k--', label = u'Übergangszeit: $T_1 = {}\, ^\circ\! C$, $T_m = {}\, ^\circ\! C$'.format(t1_str, tm_str))
+    
     ax.fill_between(x_fit_before, y_fit_before_down, y_fit_before_up, facecolor = 'r', alpha = 0.2)
     ax.fill_between(x_fit_after, y_fit_after_down, y_fit_after_up, facecolor = 'g', alpha = 0.2)
 
