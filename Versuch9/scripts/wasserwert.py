@@ -95,8 +95,8 @@ def plot_curve():
 
     #calculates Wasserwert
     w, m_eq = calculate_w(params_before, params_after, t_transition)
-    w_str = fmtr.format('{0:.2u}', w)
-    m_eq_str = fmtr.format('{0:.2u}', m_eq)
+    w_str = fmtr.format('{0:.1u}', w/1000) #convert in kJ/K
+    m_eq_str = fmtr.format('{0:.1u}', m_eq/1000) #convert in kg
 
     #setting up plot
     fig, ax = plt.subplots()
@@ -126,7 +126,7 @@ def plot_curve():
     plt.tight_layout()
     plt.subplots_adjust(left = 0.12, right = 0.99, bottom = 0.16, top = 0.99)
 
-    legend = ax.legend(loc = 'center left', fontsize = 'large', title = r'$W = ${0} J/K, $m_{{eq}} = ${1} g'.format(w_str, m_eq_str))
+    legend = ax.legend(loc = 'center left', fontsize = 'large', title = r'$W = ${0} kJ/K, $m_{{eq}} = ${1} kg'.format(w_str, m_eq_str))
     legend.get_title().set_fontsize('14')
 
 

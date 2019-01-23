@@ -153,7 +153,7 @@ def plot_curve():
 
 
     l = calculate_l(params_before, params_after, t_transition)
-    l_str = fmtr.format('{0:.2u}', l)
+    l_str = fmtr.format('{0:.1u}', l/1000) #convert from kJ/kg to MJ/kg
 
     #setting up plot
     fig, ax = plt.subplots()
@@ -181,7 +181,7 @@ def plot_curve():
     plt.tight_layout()
     plt.subplots_adjust(left = 0.12, right = 0.99, bottom = 0.16, top = 0.99)
 
-    legend = ax.legend(loc = 'center right', fontsize = 'large', title = r'$l = ${0} J/g'.format(l_str))
+    legend = ax.legend(loc = 'center right', fontsize = 'large', title = r'$l = ${0} MJ/kg'.format(l_str))
     legend.get_title().set_fontsize('14')
 
 
