@@ -51,7 +51,7 @@ def cubic(B,x):
 def plot_pressure_curve():
     #f = ft.cubic
     f = cubic
-    T_normal = 373.15
+    T_normal = 373.16
     T_labor = ufloat(371, 0.5)
     T, p, vd = get_data()
     #popt_p, cov_p = curve_fit(f,T,p)
@@ -61,6 +61,8 @@ def plot_pressure_curve():
     popt_p, chi2_p = out_p.beta, out_p.res_var
     popt_v, chi2_v = out_v.beta, out_v.res_var
 
+    p_labor = f(popt_p, T_labor)
+    print (p_labor)
     l_normal = compute_l(T_normal, popt_p, popt_v)
     l_labor = compute_l(T_labor, popt_p, popt_v)
     fmtr = ShorthandFormatter()
@@ -79,7 +81,7 @@ def plot_pressure_curve():
     #ax.plot(x_fit, f(x_fit, *popt_v), 'y-')
     ax2.plot(x_fit, dpdt(x_fit, popt_p), 'g-', label = r'$\frac{dp}{dt}$, erhalten durch Ableiten von p(T)')
     
-    ax2.plot([], [],' ', label = '$l_{{Labor}} = {}\: J/(kg\,K)$ bei $T=371.0(5)\,K$, \n $l_{{normal}} = {:.1f}$ bei $T=373.15\,K$'.format(l_labor_str, l_normal))
+    ax2.plot([], [],' ', label = '$l_{{Labor}} = {}\: J/(kg\,K)$ bei $T=371.0(5)\,K$, \n $l_{{normal}} = {:.1f}\: J/(kg\,K)$ bei $T=373.16\,K$'.format(l_labor_str, l_normal))
     ax.set_xlabel('Temperatur in K', fontsize = 18)
     ax.set_ylabel('Druck in kPa', fontsize = 18)
     ax.set_xbound(351, 395)

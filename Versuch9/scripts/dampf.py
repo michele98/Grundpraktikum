@@ -168,14 +168,19 @@ def plot_curve():
     ax.set_xbound(-0.5,25.5)
     ax.set_ybound(10,49)
     ax.tick_params(labelsize = 18)
+    
     #labels
     ax.set_xlabel('Zeit in min', fontsize = 18)
     ax.set_ylabel(r'Temperatur in $^{\circ}C$', fontsize = 18)
-    plt.tight_layout()
-    plt.subplots_adjust(left = 0.12, right = 0.99, bottom = 0.16, top = 0.99)
-
-    legend = ax.legend(loc = 'center left', fontsize = 'large', title = r'$l = ${0} MJ/kg'.format(l_str))
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    
+    legend = ax.legend(bbox_to_anchor=(1.4, 0.5), loc='center right', borderaxespad=0., fontsize = 'large', title = r'$l = ${0} MJ/kg'.format(l_str))
     legend.get_title().set_fontsize('14')
+
+    fig.set_size_inches((10,5))
+    plt.tight_layout()
+    plt.subplots_adjust(left = 0.12, right = 0.74, bottom = 0.16, top = 0.99)
 
 
 if __name__ == "__main__":
